@@ -1,0 +1,64 @@
+FROM scottyhardy/docker-wine
+
+
+
+# PULL /wine/winecfg from private server pre-configured
+
+
+# Install dependencies for display scaling
+RUN apt-get update -y && \ 
+    DEBIAN_FRONTEND=noninteractive  && \ 
+    apt-get install -y \
+    git \
+    unzip
+    
+
+
+
+
+COPY ./wine/Python38.zip /home/wineuser/temp/python
+COPY ./MetaTrader5.zip /home/wineuser/temp/meta  
+
+
+#RUN apt-get install -y unzip && \
+#wget -nc https://drive.google.com/uc?export=download&id=1ajvAjzriUCgZaM40QMlUhZCBL2D9J4Sq && \
+#mv Python38.zip  /home/wineuser/temp/python   && \
+#wget -nc https://drive.google.com/uc?export=download&id=1SUpM3MFOaF43V5P9hFu2deNgCoJ2Di5c&confirm=t&uuid=e706b81d-5482-4d7d-8a9f-8b4ff37fc4ca && \
+#mv MetaTrader5.zip  /home/wineuser/temp/meta  
+
+
+
+
+ARG Python_Embedded_Archive=Python38.zip
+ARG Meta_Embedded_Archive=MetaTrader5.zip
+
+RUN unzip /home/wineuser/temp/python/${Python_Embedded_Archive} -d /home/wineuser/wine/python
+
+RUN unzip /home/wineuser/temp/meta/${Meta_Embedded_Archive} -d /home/wineuser/wine/mt5setup
+
+
+
+
+
+
+
+
+RUN chmod +x /home/wineuser/wine/python/Python38/python.exe
+RUN chmod +x /home/wineuser/wine/mt5setup/MetaTrader 5/terminal64.exe
+
+# Add Embedded Python to PATH in wine
+#COPY add_to_wine_path.sh /wine
+
+
+
+
+
+
+
+
+
+
+# Autorun MetaTrader Terminal.
+#ENTRYPOINT [ "wine" ]
+#
+#CMD /home/wine/python/Python38/python.exe;

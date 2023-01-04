@@ -1,0 +1,158 @@
+version: "3.9"
+
+services:
+  mongo:   
+    #build:
+    #  context: .
+    #  dockerfile: ./php/php.dockerfile
+    image: mongo:latest
+    container_name: mongo
+    restart: always
+    command: --auth
+    #env_file:
+    #  - .env
+    environment:
+      - MONGO_INITDB_DATABASE= ${MONGO_INITDB_DATABASE}
+      - MONGO_INITDB_ROOT_USERNAME= ${MONGO_INITDB_ROOT_USERNAME}
+      - MONGO_INITDB_ROOT_PASSWORD= ${MONGO_INITDB_ROOT_PASSWORD}
+      - MONGODB_HOSTNAME = ${MONGODB_HOSTNAME}
+      - MONGODB_PORT = ${MONGODB_PORT}
+
+    ports:
+       - ${MONGODB_PORT}:${MONGODB_PORT}
+    expose:
+      - ${MONGODB_PORT}
+    volumes:
+      - ./mongodb/mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
+      - ./mongodb/database:/data/db
+      - ./mongodb/mongoconfig:/data/configdb:rw
+    #networks:
+    #  - mongo-compose-network
+    #networks:
+    #  production-trader:
+    #   ipv4_address: ${MONGODB_HOSTNAME}
+    #depends_on: 
+    #  - mongo-agenda
+
+  mongo-express:
+     image: mongo-express:latest
+     container_name: db-mongo-express
+     restart: always
+     #command: --auth
+     depends_on: 
+      - mongo
+     links:
+       - mongo
+     #env_file:
+     # - .env
+     ports:
+       - ${ME_CONFIG_MONGODB_PORT}:${ME_CONFIG_MONGODB_PORT}
+     environment:
+       - ME_CONFIG_MONGODB_SERVER=mongo
+       - ME_CONFIG_BASICAUTH_USERNAME= renatogroffe
+       - ME_CONFIG_BASICAUTH_PASSWORD= MongoExpress2019!
+       - ME_CONFIG_MONGODB_ADMINUSERNAME=${ME_CONFIG_MONGODB_ADMINUSERNAME}
+       - ME_CONFIG_MONGODB_ADMINPASSWORD=${ME_CONFIG_MONGODB_ADMINPASSWORD}
+       #- ME_CONFIG_MONGODB_URL=${ME_CONFIG_MONGODB_URL}   
+       #- ME_CONFIG_OPTIONS_EDITORTHEME=ambiance    
+       #- ME_CONFIG_MONGODB_ENABLE_ADMIN=false
+       - ME_CONFIG_MONGODB_AUTH_DATABASE=admin       
+       #- VCAP_APP_HOST=localhost
+     #networks:
+     # - mongo-compose-network
+     #networks:
+     # production-trader:
+     #  ipv4_address: ${ME_CONFIG_MONGODB_HOSTNAME}
+ 
+
+  notebook:
+     #image: mongo-express:latest
+     build:
+      context: .
+      dockerfile: ./notebook/Dockerfile
+     container_name: notebook
+     restart: always
+     #command: --auth
+     depends_on: 
+      - mongo
+     #links:
+     #  - mongo
+     #env_file:
+     # - .env
+     volumes:
+      - ./notebook/projetos/:/home/notebooks:rw
+     ports:
+       - 8887:8888
+     expose:
+      - 8887
+      
+     #networks:
+     # - mongo-compose-network
+     #networks:
+     # production-trader:
+     #  ipv4_address: ${ME_CONFIG_MONGODB_HOSTNAME}
+
+  wine:   
+    #build:
+    #  context: .
+    #  dockerfile: ./wine/Dockerfile
+    image: scottyhardy/docker-wine
+    container_name: wine
+    restart: always
+    #command: --auth
+    #env_file:
+    #  - .env
+    environment:
+      - RDP_SERVER=yes     
+    depends_on: 
+      - mongo
+    ports:
+       - 3390:3389/tcp       
+       - 8886:8888    
+    expose:
+      - 3390
+      - 8886
+    volumes:
+      - ./wine/home:/home:rw
+      - ./wine/programas:/home/wineuser:rw      
+    #networks:
+    #  - mongo-compose-network
+    #networks:
+    #  production-trader:
+    #   ipv4_address: ${MONGODB_HOSTNAME}
+    #depends_on: 
+    #  - mongo-agenda
+
+
+  #cloudflare-ddns:
+  #  image: oznu/cloudflare-ddns:latest
+  #  restart: always
+  #  environment:      
+  #    - API_KEY=WTFgAvEuBnk_qdnUKmFZKwyl3uSVo_NJfmkNLeBm
+  #    - ZONE=tecws.com.br      
+  #    - SUBDOMAIN=www
+  #    - PROXIED=FALSE    
+  #    - PUID=998
+  #    - PGID=100
+#
+#
+networks:
+    default:
+        name: mongo-compose-network
+
+
+#networks:
+#    production-trader:
+#      driver: bridge
+#      ipam:
+#        driver: default
+#        config:
+#          - subnet: 172.29.0.0/16
+#  
+
+#networks: 
+#    mongo-compose-network:
+#      name: mongo-compose-network
+#      driver: bridge
+
+

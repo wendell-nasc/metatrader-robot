@@ -1,0 +1,4 @@
+wine python -m pip install -U metatrader5 
+wine python -m pip install -U matplotlib
+wine python -m pip install -U pandas
+wine python -m pip install -U numpy
