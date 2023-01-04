@@ -2,6 +2,7 @@
 .mongodb/database
 .mongodb/mongo-init.js
 .mongodb/mongoconfig
+.mongodb/
 
 
 .wine/home
